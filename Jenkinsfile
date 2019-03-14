@@ -1,25 +1,27 @@
-  node{
-   stage('SCM Checkout'){
-     git 'https://github.com/javahometech/my-app'
-   }
-   stage('Compile-Package'){
+node{
+  stage('Git Checkout'){
+      git url: 'https://github.com/anooptcs/my-app.git',
+          branch:'master'
+  }
+  stage('Compile-Package'){
     
-      def mvnHome =  tool name: 'maven-3', type: 'maven'   
+      def mvnHome =  tool name: 'maven-3.5.4', type: 'maven'   
       sh "${mvnHome}/bin/mvn package"
    }
-   stage('Email Notification'){
+  stage('Build Docker Image'){
+    sh 'docker build -t anooptcs/tomcat8-jdk8 .'
+  }
+ stage('Upload Image to DockerHub'){
+        withCredentials([string(credentialsId: 'dockeHubPwd', variable: 'dockeHubPwd')]) {
+        sh "docker login -u anooptcs -p ${dockeHubPwd}"
+    }
+    sh 'sudo docker push anooptcs/tomcat8-jdk8'
+  }
+     stage('Email Notification'){
       mail bcc: '', body: '''Hi Welcome to jenkins email alerts
       Thanks
       Hari''', cc: '', from: '', replyTo: '', subject: 'Jenkins Job', to: 'hari.kammana@gmail.com'
    }
-   stage('Slack Notification'){
-       slackSend baseUrl: 'https://hooks.slack.com/services/',
-       channel: '#jenkins-pipeline-demo',
-       color: 'good', 
-       message: 'Welcome to Jenkins, Slack!', 
-       teamDomain: 'javahomecloud',
-       tokenCredentialId: 'slack-demo'
-   }
-}
 
+ }
 
