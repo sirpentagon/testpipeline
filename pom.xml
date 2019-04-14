@@ -131,8 +131,7 @@
           <url>http://repo1.maven.org/maven2</url>
        </repository>
     </repositories>
-    </dependencies>
-	<!-- GCP Nexus-->	
+<!-- GCP Nexus-->	
 	<distributionManagement>
 		<repository>
 			<id>deployment</id>
