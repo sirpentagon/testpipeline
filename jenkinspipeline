@@ -1,0 +1,27 @@
+node {
+   stage('SCM Checkout'){
+       git url: 'https://github.com/anooptcs/my-app.git'
+   }
+   stage('Mvn Package'){
+     def mvnHome =  tool name: 'maven-3.5.4', type: 'maven' 
+     def mvnCMD = "${mvnHome}/bin/mvn"
+     sh "${mvnCMD} clean package test"
+   }
+      stage('SonarQ Code Scan'){
+     def mvnHome =  tool name: 'maven-3.5.4', type: 'maven' 
+     def mvnCMD = "${mvnHome}/bin/mvn"
+     sh "${mvnCMD} clean verify sonar:sonar"
+   }
+   stage('Build Docker Image'){
+     sh 'docker build -t anooptcs/my-app:0.0.2 .'
+   }
+   stage('scan Docker Image'){
+       aquaMicroscanner imageName: 'anooptcs/my-app:0.0.2', notCompliesCmd: '', onDisallowed: 'ignore', outputFormat: 'html'
+   }
+   stage('Push Docker Image'){
+     withCredentials([string(credentialsId: 'dockeHubpasspord', variable: 'dockeHubpasspord')]){
+        sh "docker login -u anooptcs -p ${dockeHubpasspord}"
+     }
+     sh 'docker push anooptcs/my-app:0.0.2'
+   }
+}
